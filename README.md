@@ -19,7 +19,8 @@ Privacy Risk Lens is a Streamlit application for reviewing CSV datasets for pote
 - [How the estimates work](#how-the-estimates-work)
 - [Data handling and limitations](#data-handling-and-limitations)
 - [Configuration](#configuration)
-- [Docker and Render](#docker-and-render)
+- [Live Demo](#live-demo)
+- [Docker](#docker)
 - [Project structure](#project-structure)
 - [License](#license)
 - [Autor](#autor)
@@ -88,7 +89,17 @@ Detection is rule-based and can produce false positives or false negatives. It r
 | `PRL_SAMPLE_N` | `200000` | Maximum number of rows to retain when sampling a larger CSV. |
 | `server.maxUploadSize` | `60` MB | Streamlit upload limit in `.streamlit/config.toml`. |
 
-## Docker and Render
+## Live Demo
+
+Try the app online:
+
+<p align="left">
+  <a href="https://privalens.streamlit.app/" target="_blank">
+    <img src="https://img.shields.io/badge/Open_Streamlit_Cloud-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Open Streamlit Cloud" />
+  </a>
+</p>
+
+## Docker
 
 Build and run the Docker image:
 
@@ -96,8 +107,6 @@ Build and run the Docker image:
 docker build -t privacy-risk-lens .
 docker run --rm -p 8501:8501 privacy-risk-lens
 ```
-
-The image runs Streamlit as an unprivileged user. The included `render.yaml` describes a Docker-based Render web service with a Streamlit health check and automatic deploys from the configured branch. Review the hosting plan and data-handling requirements before deploying real datasets.
 
 ## Project structure
 
@@ -110,7 +119,7 @@ The image runs Streamlit as an unprivileged user. The included `render.yaml` des
 | `core/report.py` | Markdown, JSON, and HTML report generation. |
 | `i18n/` | French and English translation catalogs. |
 | `ui/` | Shared stylesheet, templates, and icons. |
-| `Dockerfile`, `render.yaml` | Container and Render deployment configuration. |
+| `Dockerfile` | Container configuration. |
 | `LICENSE` | MIT license terms. |
 
 ## License

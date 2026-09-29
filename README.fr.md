@@ -19,7 +19,8 @@ Privacy Risk Lens est une application qui aide à examiner des fichiers CSV à l
 - [Méthode et interprétation](#méthode-et-interprétation)
 - [Traitement des données et limites](#traitement-des-données-et-limites)
 - [Configuration](#configuration)
-- [Docker et Render](#docker-et-render)
+- [Démonstration en ligne](#démonstration-en-ligne)
+- [Docker](#docker)
 - [Organisation du projet](#organisation-du-projet)
 - [Licence](#licence)
 - [Auteur](#auteur)
@@ -88,7 +89,17 @@ La détection repose sur des règles et peut produire des faux positifs ou des f
 | `PRL_SAMPLE_N` | `200000` | Nombre maximal de lignes conservées pour l’échantillonnage d’un fichier plus grand. |
 | `server.maxUploadSize` | `60` Mo | Limite d’import Streamlit définie dans `.streamlit/config.toml`. |
 
-## Docker et Render
+## Démonstration en ligne
+
+Tester l'application en ligne :
+
+<p align="left">
+  <a href="https://privalens.streamlit.app/" target="_blank">
+    <img src="https://img.shields.io/badge/Ouvrir_Streamlit_Cloud-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Ouvrir Streamlit Cloud" />
+  </a>
+</p>
+
+## Docker
 
 Construire et lancer l’image Docker :
 
@@ -96,8 +107,6 @@ Construire et lancer l’image Docker :
 docker build -t privacy-risk-lens .
 docker run --rm -p 8501:8501 privacy-risk-lens
 ```
-
-Le conteneur exécute Streamlit avec un utilisateur non privilégié. Le fichier `render.yaml` décrit un service web Render basé sur Docker, avec une vérification de santé Streamlit et le déploiement automatique depuis la branche configurée. Vérifiez les exigences d’hébergement et de traitement des données avant d’y charger des données réelles.
 
 ## Organisation du projet
 
@@ -110,7 +119,7 @@ Le conteneur exécute Streamlit avec un utilisateur non privilégié. Le fichier
 | `core/report.py` | Génération des rapports Markdown, JSON et HTML. |
 | `i18n/` | Catalogues de traduction français et anglais. |
 | `ui/` | Feuille de style, templates et icônes partagés. |
-| `Dockerfile`, `render.yaml` | Configuration du conteneur et du déploiement Render. |
+| `Dockerfile` | Configuration du conteneur. |
 | `LICENSE` | Conditions de la licence MIT. |
 
 ## Licence
