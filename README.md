@@ -23,7 +23,7 @@ Privacy Risk Lens is a Streamlit application for reviewing CSV datasets for pote
 - [Docker](#docker)
 - [Project structure](#project-structure)
 - [License](#license)
-- [Autor](#autor)
+- [Author](#author)
 
 ## Capabilities
 
@@ -126,7 +126,7 @@ docker run --rm -p 8501:8501 privacy-risk-lens
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full terms.
 
-## Autor
+## Author
 
 Maxime NDACLEU - Data Analyst & BI
 
