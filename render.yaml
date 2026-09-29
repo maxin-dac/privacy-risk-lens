@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: privacy-risk-lens
+    runtime: docker
+    plan: starter            # passez a "free" pour la vitrine, mais RAM limitee -> echantillonnage
+    healthCheckPath: /_stcore/health
+    autoDeploy: true
+    envVars:
+      - key: PRL_MAX_ROWS_FULL
+        value: "300000"
+      - key: PRL_SAMPLE_N
+        value: "200000"

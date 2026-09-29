@@ -1,0 +1,33 @@
+name: version-and-release
+on:
+  push:
+    branches: [main]
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}   # un push fait avec GITHUB_TOKEN NE redeclenche PAS de workflow -> pas de boucle
+      - name: Bump SemVer + tag
+        run: |
+          CUR=$(cat VERSION)
+          MAJ=$(echo "$CUR" | cut -d. -f1)
+          MIN=$(echo "$CUR" | cut -d. -f2)
+          PAT=$(echo "$CUR" | cut -d. -f3)
+          NEW="$MAJ.$MIN.$((PAT+1))"
+          SHA=$(git rev-parse --short HEAD)
+          echo "$NEW" > VERSION
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git add VERSION
+          git commit -m "chore(release): v$NEW [skip ci]" || echo "rien a commiter"
+          git tag -f "v$NEW+$SHA"
+          git push
+          git push -f --tags
+      # Optionnel : declencher un redeploy Render explicitement (sinon autoDeploy sur push suffit)
+      # - name: Trigger Render
+      #   run: curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
