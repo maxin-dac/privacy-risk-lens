@@ -1,4 +1,4 @@
-# Privacy Risk Lens
+# 🛡️ Privacy Risk Lens
 
 English | [Français](README.fr.md)
 
