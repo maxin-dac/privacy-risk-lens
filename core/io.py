@@ -79,7 +79,7 @@ def load_sampled(obj, sep, enc, max_rows_full=None, sample_n=None):
             df = pd.read_csv(f, sep=sep, encoding=enc)
         return df, total, False
     stride = max(1, math.ceil(total / sample_n))
-    # echantillon systatique uniforme, memoire bornee (pandas ne garde que les lignes prises)
+    
     with _buffer(obj) as f:
         df = pd.read_csv(f, sep=sep, encoding=enc,
                          skiprows=lambda i: i > 0 and ((i - 1) % stride) != 0)

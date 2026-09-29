@@ -4,7 +4,7 @@ import pandas as pd
 from .recommend import recommend_for
 
 THRESHOLD = 0.5
-CONTENT_MIN_RATIO = 0.5   # fraction de valeurs devant matcher la regex pour "confirmer" la colonne
+CONTENT_MIN_RATIO = 0.5  
 
 @dataclass
 class ColumnRisk:
@@ -20,8 +20,7 @@ class ColumnRisk:
 def _norm(s):
     return unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower()
 
-# Profils par categorie : nommage (strong/weak), regex de contenu, plage d'unicite attendue, dtypes OK.
-# unicity = (lo, hi) ; dtype = set de "kind" pandas (O=object, i/u=int, f=float, M=datetime, b=bool).
+
 PROFILES = {
     "email": dict(
         strong=r"(e-?mail|courriel|\bmel\b)", weak=None,
@@ -47,7 +46,7 @@ PROFILES = {
         content=None, uniq=(0.0, 1.01), dtypes={"O"}, atomic=True),
     "quasi_id": dict(
         strong=r"(code_?postal|\bzip\b|\bcp\b|naissance|\bdob\b|birth|date_?nais|\bsexe\b|\bgenre\b|\bage\b|nationalite|ville|city|town|region|departement)", weak=None,
-        content=re.compile(r"^\d{5}$"),  # confirme un code postal FR si present
+        content=re.compile(r"^\d{5}$"), 
         uniq=(0.0, 0.95), dtypes={"O", "i", "u", "f", "M"}, atomic=True),
 }
 
@@ -80,7 +79,7 @@ def score_column(col, series, n_sample):
         sample = sample.sample(n=sample_limit, random_state=0)
     n_s = len(sample)
     dtype_kind = str(series.dtype.kind) if hasattr(series, "dtype") else "O"
-    # "texte libre" = objet, valeurs longues en moyenne (plusieurs tokens)
+    
     avg_tokens = (sample.str.split().str.len().mean() if n_s else 0) or 0
     is_freetext = (dtype_kind == "O") and (avg_tokens > 3)
 
@@ -96,7 +95,7 @@ def score_column(col, series, n_sample):
             if ratio >= CONTENT_MIN_RATIO:
                 s += 0.30 * min(ratio / 0.8, 1.0); signals.append(f"content:{cat}({ratio:.0%})")
             elif ratio > 0 and is_freetext:
-                pass  # PII inline -> drape has_inline_pii, pas de categorisation pleine
+                pass  
         if dtype_kind in p["dtypes"]:
             s += 0.10
         else:
@@ -107,7 +106,7 @@ def score_column(col, series, n_sample):
             s -= 0.20
         scores[cat] = max(s, 0.0)
 
-    # drapeau inline : texte libre contenant au moins un PII, sans categorisation pleine
+    
     inline = False
     if is_freetext and n_s:
         for cat, p in PROFILES.items():

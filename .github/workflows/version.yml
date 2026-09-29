@@ -28,6 +28,6 @@ jobs:
           git tag -f "v$NEW+$SHA"
           git push
           git push -f --tags
-      # Optionnel : declencher un redeploy Render explicitement (sinon autoDeploy sur push suffit)
+
       # - name: Trigger Render
       #   run: curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"

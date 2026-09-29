@@ -41,12 +41,12 @@ def alert(kind, msg):
                 unsafe_allow_html=True)
 
 
-# ---------------- sidebar : brand (HTML) + pills de langue (boutons) ----------------
+
 with st.sidebar:
     st.markdown(fill(SIDEBAR_HTML.replace("{{icon_shield}}", svg("shield", 22))
                      .replace("{{version}}", VERSION), L), unsafe_allow_html=True)
     lc1, lc2 = st.columns(2)
-    # l'actif = primary (pill bleue + point blanc via CSS), l'autre = secondary
+    
     if lc1.button("FR", key="lang_fr", width="stretch",
                   type=("primary" if L == "fr" else "secondary")):
         st.session_state.lang = "fr"; st.rerun()
@@ -55,7 +55,7 @@ with st.sidebar:
         st.session_state.lang = "en"; st.rerun()
     st.markdown(f"<div class='prl-note'>{t('privacy.note', L)}</div>", unsafe_allow_html=True)
 
-# ---------------- topbar FIGEE = un seul st.radio stylé (plus de HTML dupliqué) ----------------
+
 TABS = [("home", "nav.home"), ("import", "nav.import"), ("overview", "nav.overview"),
         ("detection", "nav.detection"), ("risk", "nav.risk"), ("report", "nav.report")]
 labels = [t(lbl, L) for _, lbl in TABS]

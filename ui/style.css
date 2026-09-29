@@ -1,6 +1,5 @@
 /* ===========================================================
-   Privacy Risk Lens - feuille de style unique
-   Surcharge les variables :root pour coller a tes tokens maison
+   Privacy Risk Lens
    =========================================================== */
 :root{
   --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -18,7 +17,7 @@
   --prl-sidebar-width: 18.75rem;
 }
 
-/* Police sans-serif partout, sauf la police dédiée aux glyphes Material. */
+/* Police sans-serif */
 html, body, .stApp, .stApp *:not(span[data-testid="stIconMaterial"]){
   font-family: var(--font) !important;
 }
@@ -29,13 +28,13 @@ span[data-testid="stIconMaterial"]{
   font-style: normal !important;
 }
 
-/* on vire le chrome Streamlit qui entre en conflit avec la topbar */
+
 header[data-testid="stHeader"]{ display:none !important; }
 .stDeployButton{ display:none !important; }
 footer{ visibility:hidden; }
 #MainMenu{ visibility:hidden; }
 
-/* ---------- TOPBAR = le st.radio stylé en barre bleue fixe ---------- */
+
 div.st-key-nav_radio{
   position: fixed !important;
   top: 0;
@@ -49,15 +48,15 @@ div.st-key-nav_radio{
   padding: 0.55rem clamp(1rem, 3vw, 3rem);
   border-radius: 0;
 }
-/* Le contenu garde une zone libre sous la barre fixe. */
+
 section[data-testid="stMain"] .block-container{
   max-width: 90rem;
   padding: 4.5rem clamp(1.25rem, 5vw, 4rem) 3rem;
 }
 section[data-testid="stSidebar"]{ border-right:1px solid var(--line); }
-/* cache le label "nav" (deja collapsed, mais au cas ou) */
+
 div.st-key-nav_radio > div[data-testid="stRadio"] > div:first-child{ display:none; }
-/* les options deviennent des pills */
+
 div.st-key-nav_radio div[data-testid="stRadio"] div[role="radiogroup"]{
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -107,7 +106,7 @@ body:has(section[data-testid="stSidebar"][aria-expanded="false"]){ --prl-sidebar
 }
 .prl-note{ color:var(--faint); font-size:0.72rem; padding:0.5rem 0.1rem; line-height:1.4; }
 
-/* pills de langue = 2 st.button (primary=actif / secondary=inactif), arrondis */
+
 section[data-testid="stSidebar"] button{
   border-radius:999px !important; font-weight:600; font-size:0.82rem;
   padding:0.3rem 0.9rem;
@@ -169,7 +168,7 @@ section[data-testid="stMain"] button{ border-radius:8px; }
 .prl-steps li{ margin:0.35rem 0; color:var(--ink); }
 .prl-steps strong{ color:var(--ink); }
 
-/* ---------- ALERTES (SVG, remplace st.info/warning/success/error) ---------- */
+
 .prl-alert{
   display:flex; gap:0.6rem; align-items:flex-start;
   border-radius:12px; padding:0.8rem 1rem; margin:0.5rem 0;
@@ -181,7 +180,7 @@ section[data-testid="stMain"] button{ border-radius:8px; }
 .prl-alert.warning{ background:#fffbeb; border-color:#fde68a; color:#92400e; }
 .prl-alert.error{   background:#fef2f2; border-color:#fecaca; color:#991b1b; }
 
-/* ---------- BADGES de niveau de risque ---------- */
+
 .prl-badge{ display:inline-block; font-size:0.74rem; font-weight:700;
   padding:0.12rem 0.55rem; border-radius:999px; }
 .prl-badge.hi{ background:#fee2e2; color:#991b1b; }

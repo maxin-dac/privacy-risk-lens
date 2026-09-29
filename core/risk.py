@@ -25,7 +25,7 @@ def k_anonymity(df, qis, threshold=5):
             "risk": risk, "threshold": threshold,
             "worst_combinations": {str(i): int(v) for i, v in enumerate(worst, 1)}}
 
-# Regles de generalisation, testees par regex ORDONNEES sur le nom de colonne (pas de substring naive).
+
 _GEN_RULES = [
     (r"(naissance|dob|birth|date_?nais)", "year",
      lambda s: pd.to_datetime(s, errors="coerce").dt.year.astype("string")),
