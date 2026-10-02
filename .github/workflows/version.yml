@@ -21,8 +21,8 @@ jobs:
           NEW="$MAJ.$MIN.$((PAT+1))"
           SHA=$(git rev-parse --short HEAD)
           echo "$NEW" > VERSION
-          git config user.name "ci-bot"
-          git config user.email "ci-bot@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add VERSION
           git commit -m "chore(release): v$NEW [skip ci]" || echo "rien a commiter"
           git tag -f "v$NEW+$SHA"
