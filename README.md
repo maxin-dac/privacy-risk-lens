@@ -2,7 +2,7 @@
 
 English | [Français](README.fr.md)
 
-Privacy Risk Lens is a Streamlit application for reviewing CSV datasets for potentially sensitive columns and estimating re-identification risk. It is intended to support privacy and data-governance reviews; it does not certify compliance, anonymity, or fitness for release.
+Privacy Risk Lens is an application for reviewing CSV datasets for potentially sensitive columns and estimating re-identification risk. It is intended to support privacy and data-governance reviews; it does not certify compliance, anonymity, or fitness for release.
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat&logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.49%2B-FF4B4B?style=flat&logo=streamlit&logoColor=white)
