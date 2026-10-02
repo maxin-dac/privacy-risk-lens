@@ -8,6 +8,7 @@ font = "sans-serif"
 
 [server]
 showEmailPrompt = false
+port = 8501
 maxUploadSize = 60
 enableXsrfProtection = true
 

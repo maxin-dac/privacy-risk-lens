@@ -7,7 +7,8 @@ from ui.icons import svg, PAGE_ICON
 
 ROOT = Path(__file__).parent
 CSS = (ROOT / "ui" / "style.css").read_text(encoding="utf-8")
-SIDEBAR_HTML = (ROOT / "ui" / "sidebar.html").read_text(encoding="utf-8")
+CSS += "\n" + (ROOT / "assets" / "suite.css").read_text(encoding="utf-8")
+BRAND_HTML = (ROOT / "ui" / "sidebar.html").read_text(encoding="utf-8")
 HOME_HTML = (ROOT / "ui" / "home.html").read_text(encoding="utf-8")
 VERSION = (ROOT / "VERSION").read_text().strip() if (ROOT / "VERSION").exists() else "dev"
 
@@ -42,32 +43,42 @@ def alert(kind, msg):
 
 
 
-with st.sidebar:
-    st.markdown(fill(SIDEBAR_HTML.replace("{{icon_shield}}", svg("shield", 22))
-                     .replace("{{version}}", VERSION), L), unsafe_allow_html=True)
-    lc1, lc2 = st.columns(2)
-    
-    if lc1.button("FR", key="lang_fr", width="stretch",
-                  type=("primary" if L == "fr" else "secondary")):
-        st.session_state.lang = "fr"; st.rerun()
-    if lc2.button("EN", key="lang_en", width="stretch",
-                  type=("primary" if L == "en" else "secondary")):
-        st.session_state.lang = "en"; st.rerun()
-    st.markdown(f"<div class='prl-note'>{t('privacy.note', L)}</div>", unsafe_allow_html=True)
-
-
 TABS = [("home", "nav.home"), ("import", "nav.import"), ("overview", "nav.overview"),
         ("detection", "nav.detection"), ("risk", "nav.risk"), ("report", "nav.report")]
 labels = [t(lbl, L) for _, lbl in TABS]
 idx = next((i for i, (k, _) in enumerate(TABS) if k == st.session_state.page), 0)
-sel = st.radio("nav", labels, index=idx, horizontal=True,
-               label_visibility="collapsed", key="nav_radio")
-st.session_state.page = next(k for k, l in TABS if t(l, L) == sel)
+view_keys = [key for key, _ in TABS]
+with st.container(key="suite-topbar"):
+    nav_col, language_col, brand_col = st.columns([6.7, 1.1, 2.2])
+    with nav_col:
+        st.session_state.page = st.segmented_control(
+            "nav",
+            view_keys,
+            default=view_keys[idx],
+            format_func=lambda key: t(dict(TABS)[key], L),
+            label_visibility="collapsed",
+            key="suite-nav",
+            required=True,
+            width="stretch",
+        )
+    with language_col:
+        st.segmented_control(
+            t("lang.label", L),
+            options=["fr", "en"],
+            format_func=lambda value: value.upper(),
+            label_visibility="collapsed",
+            key="lang",
+            required=True,
+        )
+    with brand_col:
+        brand = fill(BRAND_HTML.replace("{{icon_shield}}", svg("shield", 22))
+                     .replace("{{version}}", VERSION), L)
+        st.markdown(brand, unsafe_allow_html=True)
 
 
 def head(tk, sk):
-    st.markdown(f"<div class='prl-h1'>{t(tk, L)}</div><div class='prl-sub'>{t(sk, L)}</div>"
-                f"<div class='prl-divider'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='suite-page-header'><div class='prl-h1'>{t(tk, L)}</div>"
+                f"<div class='prl-sub'>{t(sk, L)}</div></div>", unsafe_allow_html=True)
 
 
 # ---------------- pages ----------------
