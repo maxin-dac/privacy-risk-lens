@@ -13,6 +13,8 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}   # un push fait avec GITHUB_TOKEN NE redeclenche PAS de workflow -> pas de boucle
       - name: Bump SemVer + tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CUR=$(cat VERSION)
           MAJ=$(echo "$CUR" | cut -d. -f1)
@@ -28,6 +30,7 @@ jobs:
           git tag -f "v$NEW+$SHA"
           git push
           git push -f --tags
+          gh release create "v$NEW+$SHA" --title "v$NEW" --generate-notes
 
       # - name: Trigger Render
       #   run: curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
