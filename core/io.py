@@ -46,25 +46,37 @@ def count_rows(obj, sep, enc):
         finally:
             text.detach()
 
-def sniff(obj):
+def sniff(obj, enc_hint=None, sep_hint=None):
     with _buffer(obj) as f:
         raw = f.read(64 * 1024)
     if not raw:
         raise ValueError("empty")
-    enc = _enc_detect(raw)
-    text = raw.decode(enc, errors="replace")
+    if enc_hint is not None and enc_hint != "auto":
+        enc = enc_hint
+    else:
+        enc = _enc_detect(raw)
+    try:
+        text = raw.decode(enc, errors="replace")
+    except Exception:
+        enc = "utf-8"
+        text = raw.decode(enc, errors="replace")
     if text.startswith("\ufeff"):
         text = text[1:]
-        enc = "utf-8-sig" if enc.startswith("utf-8") else enc
-    try:
-        sep = csv.Sniffer().sniff(text, delimiters=",;\t|").delimiter
-    except csv.Error:
-        sep = ","
+        if enc_hint is None or enc_hint == "auto":
+            enc = "utf-8-sig" if enc.startswith("utf-8") else enc
+    if sep_hint is not None and sep_hint != "auto":
+        sep = sep_hint
+    else:
+        try:
+            sep = csv.Sniffer().sniff(text, delimiters=",;\t|").delimiter
+        except csv.Error:
+            sep = ","
     head = pd.read_csv(_io.StringIO(text), sep=sep, encoding=enc, nrows=0)
     cols = list(head.columns)
     if not cols:
         raise ValueError("nocols")
     return enc, sep, cols
+
 
 def load_sampled(obj, sep, enc, max_rows_full=None, sample_n=None):
     max_rows_full = int(os.getenv("PRL_MAX_ROWS_FULL", 300_000 if max_rows_full is None else max_rows_full))

@@ -95,18 +95,38 @@ if st.session_state.page == "home":
 
 elif st.session_state.page == "import":
     head("import.title", "import.sub")
+    with st.expander(t("import.ioopts", L), expanded=False):
+        max_rows_full = st.number_input(t("opt.max_rows_full", L), min_value=100, max_value=2000000,
+                                        value=300000, step=10000, help=t("opt.max_rows_full_help", L),
+                                        key="opt_max_rows_full")
+        sample_n = st.number_input(t("opt.sample_n", L), min_value=100, max_value=2000000,
+                                   value=200000, step=10000, help=t("opt.sample_n_help", L),
+                                   key="opt_sample_n")
+        sep_map = {"sep_auto": "auto", "sep_comma": ",", "sep_semicolon": ";", "sep_tab": "\t", "sep_pipe": "|"}
+        sep_label = st.selectbox(t("opt.separator", L), list(sep_map.keys()), index=0,
+                                 help=t("opt.separator_help", L), key="opt_sep_label",
+                                 format_func=lambda k: t(f"sep.{k}", L))
+        enc_options = ["auto", "utf-8", "utf-8-sig", "latin1", "cp1252"]
+        enc_value = st.selectbox(t("opt.encoding", L), enc_options, index=0,
+                                 help=t("opt.encoding_help", L), key="opt_enc")
+        sep_value = sep_map[sep_label]
     up = st.file_uploader(t("import.drop", L), type=["csv"], key="uploader")
     if up is not None:
         upload_id = getattr(up, "file_id", None) or (up.name, up.size)
-        if st.session_state.get("_upload_id") != upload_id:
+        opt_change_id = (max_rows_full, sample_n, sep_value, enc_value)
+        full_id = (upload_id, opt_change_id)
+        if st.session_state.get("_upload_id") != full_id:
             for key in ("df", "total", "sampled", "dets", "risk_res", "gen", "_upload_error",
                         "_upload_enc", "_upload_sep", "_upload_cols", "_upload_schema"):
                 st.session_state.pop(key, None)
-            st.session_state["_upload_id"] = upload_id
+            st.session_state["_upload_id"] = full_id
             try:
                 data = up.getvalue()
-                enc, sep, cols = cio.sniff(data)
-                df, total, sampled = cio.load_sampled(data, sep, enc)
+                enc, sep, cols = cio.sniff(data, enc_hint=None if enc_value == "auto" else enc_value,
+                                           sep_hint=None if sep_value == "auto" else sep_value)
+                df, total, sampled = cio.load_sampled(data, sep, enc,
+                                                      max_rows_full=int(max_rows_full),
+                                                      sample_n=int(sample_n))
                 schema = [{"col": c, "dtype": str(df[c].dtype),
                            "nonnull": int(df[c].notna().sum()),
                            "uniq": int(df[c].nunique(dropna=True))} for c in df.columns]
