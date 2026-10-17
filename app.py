@@ -4,12 +4,22 @@ from html import escape
 from core import io as cio, detection, risk as crank, report
 from i18n.catalog import t
 from ui.icons import svg, PAGE_ICON
+from ui.components import (
+    page_header,
+    section,
+    card,
+    kv_grid,
+    warn_box,
+    ok_box,
+    info_box,
+    err_box,
+    md_bold_to_html,
+)
 
 ROOT = Path(__file__).parent
 CSS = (ROOT / "ui" / "style.css").read_text(encoding="utf-8")
 CSS += "\n" + (ROOT / "assets" / "suite.css").read_text(encoding="utf-8")
 BRAND_HTML = (ROOT / "ui" / "sidebar.html").read_text(encoding="utf-8")
-HOME_HTML = (ROOT / "ui" / "home.html").read_text(encoding="utf-8")
 VERSION = (ROOT / "VERSION").read_text().strip() if (ROOT / "VERSION").exists() else "dev"
 
 st.set_page_config(page_title="Privacy Risk Lens", layout="wide", page_icon=PAGE_ICON)
@@ -37,10 +47,15 @@ def fill(html, lang):
 
 
 def alert(kind, msg):
-    """Bandeau HTML+SVG (remplace st.info/warning/success/error -> zero emoji natif)."""
-    st.markdown(f"<div class='prl-alert {kind}'>{svg(kind)}<div>{msg}</div></div>",
-                unsafe_allow_html=True)
-
+    """Bandeau unifié HTML+SVG."""
+    if kind == "warning":
+        warn_box(msg)
+    elif kind == "success":
+        ok_box(msg)
+    elif kind == "error":
+        err_box(msg)
+    else:
+        info_box(msg)
 
 
 TABS = [("home", "nav.home"), ("import", "nav.import"), ("overview", "nav.overview"),
@@ -77,21 +92,30 @@ with st.container(key="suite-topbar"):
 
 
 def head(tk, sk):
-    st.markdown(f"<div class='suite-page-header'><div class='prl-h1'>{t(tk, L)}</div>"
-                f"<div class='prl-sub'>{t(sk, L)}</div></div>", unsafe_allow_html=True)
+    page_header(t(tk, L), t(sk, L))
 
 
 # ---------------- pages ----------------
 if st.session_state.page == "home":
-    state = (f"<div class='prl-card'>{len(st.session_state.df):,} {t('home.rows', L)} / "
-             f"{st.session_state.get('total', 0):,} {t('home.rows_total', L)} · "
-             f"{t('home.sampled' if st.session_state.get('sampled') else 'home.full', L)}</div>"
-             ) if "df" in st.session_state else ""
-    html = HOME_HTML.replace("{{state_block}}",
-              state or f"<div class='prl-alert info'>{svg('info')}<div>{t('home.no_data', L)}</div></div>")
-    html = fill(html, L)
-    st.markdown(html, unsafe_allow_html=True)
-    alert("warning", t("disclaimer", L))
+    page_header("Privacy Risk Lens", t("home.sub", L))
+    section(t("home.howto", L))
+    steps = "".join(f"<li>{md_bold_to_html(t(k, L))}</li>" for k in ("home.step1", "home.step2", "home.step3"))
+    card(f"<ol>{steps}</ol>")
+    section(t("home.state", L))
+    df = st.session_state.get("df")
+    dets = st.session_state.get("dets")
+    risk_res = st.session_state.get("risk_res")
+    kv_grid([
+        (t("home.rows", L), (f"{len(df):,}".replace(",", " ") if df is not None else "-")),
+        (t("import.cols", L), (len(df.columns) if df is not None else "-")),
+        (t("overview.sens", L), (str(len([d for d in dets if d.category != "none"])) if dets is not None else "-")),
+        (t("overview.level", L), (crank.overall_risk(dets, risk_res)["level"].upper() if dets is not None else "-")),
+    ])
+    if df is None:
+        warn_box(t("home.no_data", L))
+    else:
+        ok_box(f"{len(df):,} {t('home.rows', L)} · {t('home.sampled' if st.session_state.get('sampled') else 'home.full', L)}")
+
 
 elif st.session_state.page == "import":
     head("import.title", "import.sub")
@@ -149,13 +173,13 @@ elif st.session_state.page == "import":
                         f"{t('import.enc', L)}=<code>{enc}</code> · "
                         f"{t('import.sep', L)}=<code>{repr(sep)}</code> · "
                         f"{t('import.cols', L)}={len(cols)}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='prl-h2'>{t('import.preview', L)}</div>", unsafe_allow_html=True)
+            section(t('import.preview', L))
             preview = df.head(8).apply(lambda column: column.map(lambda _: "•"))
             st.dataframe(preview, width="stretch", hide_index=True)
             schema = [{t("import.col", L): row["col"], t("import.dtype", L): row["dtype"],
                        t("import.nonnull", L): row["nonnull"], t("import.uniq", L): row["uniq"]}
                       for row in st.session_state._upload_schema]
-            st.markdown(f"<div class='prl-h2'>{t('import.schema', L)}</div>", unsafe_allow_html=True)
+            section(t('import.schema', L))
             st.dataframe(schema, width="stretch", hide_index=True)
             if st.button(t("import.run", L), type="primary"):
                 with st.spinner(t("import.analyzing", L)):
@@ -164,10 +188,9 @@ elif st.session_state.page == "import":
                     st.session_state.dets = dets
                     st.session_state.risk_res = crank.k_anonymity(df, qis) if qis else None
                     st.session_state.gen = crank.suggest_generalization(df, qis) if qis else None
-                alert("success", t("import.done", L))
+                ok_box(t("import.done", L))
     elif "df" in st.session_state:
-        st.markdown(f"<div class='prl-card'>{t('import.session_info', L).format(count=len(st.session_state.df))}</div>",
-                    unsafe_allow_html=True)
+        card(t('import.session_info', L).format(count=len(st.session_state.df)))
         if st.button(t("import.clear", L), key="clear_dataset"):
             for key in ("df", "total", "sampled", "dets", "risk_res", "gen", "_upload_id",
                         "_upload_error", "_upload_enc", "_upload_sep", "_upload_cols", "_upload_schema"):
@@ -176,19 +199,18 @@ elif st.session_state.page == "import":
 elif st.session_state.page == "overview":
     head("overview.title", "overview.sub")
     if "dets" not in st.session_state:
-        alert("info", t("err.need_data", L))
+        warn_box(t("err.need_data", L))
     else:
         ov = crank.overall_risk(st.session_state.dets, st.session_state.get("risk_res"))
         kres = st.session_state.get("risk_res")
-        cls = {"eleve": "hi", "moyen": "mid", "faible": "lo"}[ov["level"]]
-        m1, m2, m3, m4 = st.columns(4)
-        m1.metric(t("overview.score", L), f"{ov['score']}/100")
-        m2.markdown(f"<div class='prl-risk-metric'><div class='prl-risk-label'>{t('overview.level', L)}</div>"
-                f"<span class='prl-badge {cls}'>{t('overview.level.' + ov['level'], L)}</span></div>",
-                unsafe_allow_html=True)
-        m3.metric(t("overview.sens", L), ov["n_sensitive"])
-        m4.metric(t("overview.kmin", L), kres["k_min"] if kres else "-")
-        st.markdown(f"<div class='prl-h2'>{t('overview.by_cat', L)}</div>", unsafe_allow_html=True)
+        section(t("overview.title", L))
+        kv_grid([
+            (t("overview.score", L), f"{ov['score']}/100"),
+            (t("overview.level", L), t("overview.level." + ov["level"], L)),
+            (t("overview.sens", L), str(ov["n_sensitive"])),
+            (t("overview.kmin", L), str(kres["k_min"]) if kres else "-"),
+        ])
+        section(t("overview.by_cat", L))
         cats = {}
         for d in st.session_state.dets:
             cats[d.category] = cats.get(d.category, 0) + 1
@@ -197,9 +219,9 @@ elif st.session_state.page == "overview":
 elif st.session_state.page == "detection":
     head("detection.title", "detection.sub")
     if "dets" not in st.session_state:
-        alert("info", t("err.need_data", L))
+        warn_box(t("err.need_data", L))
     elif not [d for d in st.session_state.dets if d.category != "none"]:
-        alert("success", t("detection.none_msg", L))
+        ok_box(t("detection.none_msg", L))
     else:
         tbl = [{t("detection.col", L): d.column, t("detection.cat", L): t(f"cat.{d.category}", L),
             t("detection.conf", L): d.confidence,
@@ -213,27 +235,27 @@ elif st.session_state.page == "detection":
 elif st.session_state.page == "risk":
     head("risk.title", "risk.sub")
     if "dets" not in st.session_state:
-        alert("info", t("err.need_data", L))
+        warn_box(t("err.need_data", L))
     else:
         kres, gen = st.session_state.get("risk_res"), st.session_state.get("gen")
         if not kres:
-            alert("info", t("risk.no_qi", L))
+            warn_box(t("risk.no_qi", L))
         else:
-            st.markdown(f"<div class='prl-card'><b>{t('risk.statement', L)}</b><br>"
-                        f"{escape(crank.risk_statement(kres, L).replace('`', ''))}</div>",
-                        unsafe_allow_html=True)
-            a, b, c = st.columns(3)
-            a.metric(t("risk.kmin", L), kres["k_min"])
-            b.metric(t("risk.frac_unique", L), f"{kres['frac_unique']:.0%}")
-            c.metric(t("risk.kafter", L), gen["k_after"] if gen and gen.get("k_after") is not None else "-")
+            card(f"<b>{t('risk.statement', L)}</b><br>{escape(crank.risk_statement(kres, L).replace('`', ''))}")
+            section(t("risk.title", L))
+            kv_grid([
+                (t("risk.kmin", L), str(kres["k_min"])),
+                (t("risk.frac_unique", L), f"{kres['frac_unique']:.0%}"),
+                (t("risk.kafter", L), str(gen["k_after"]) if gen and gen.get("k_after") is not None else "-"),
+            ])
             if kres.get("worst_combinations"):
-                st.markdown(f"<div class='prl-h2'>{t('risk.worst', L)}</div>", unsafe_allow_html=True)
+                section(t("risk.worst", L))
                 st.dataframe([{t("risk.combo", L): f"{t('risk.combo', L)} {i}",
                                t("risk.size", L): v}
                               for i, v in kres["worst_combinations"].items()],
                              width="stretch", hide_index=True)
             if gen and gen.get("applied"):
-                st.markdown(f"<div class='prl-h2'>{t('risk.gen_applied', L)}</div>", unsafe_allow_html=True)
+                section(t("risk.gen_applied", L))
                 st.dataframe([{t("risk.gen_col", L): row["column"],
                                t("risk.gen_rule", L): row["rule"]} for row in gen["applied"]],
                              width="stretch", hide_index=True)
@@ -241,7 +263,7 @@ elif st.session_state.page == "risk":
 elif st.session_state.page == "report":
     head("report.title", "report.sub")
     if "dets" not in st.session_state:
-        alert("info", t("err.need_data", L))
+        warn_box(t("err.need_data", L))
     else:
         fmt = st.selectbox(t("report.format", L), ["markdown", "json", "html"],
                            format_func=lambda x: t({"markdown": "report.r_md", "json": "report.r_json",
